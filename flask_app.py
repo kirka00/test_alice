@@ -140,6 +140,7 @@ def get_suggests(user_id):
             suggests.append({
                 "title": "Ладно",
                 "url": "https://market.yandex.ru/search?text=слон",
+                "hide": True
             })
     else:
         suggests = [
