@@ -61,6 +61,7 @@ def main():
 
 
 def handle_dialog(req, res):
+    global flag
     user_id = req['session']['user_id']
 
     if req['session']['new']:
@@ -76,9 +77,14 @@ def handle_dialog(req, res):
             ]
         }
         # Заполняем текст ответа
-        res['response']['text'] = 'Привет! Купи слона!'
-        # Получим подсказки
-        res['response']['buttons'] = get_suggests(user_id)
+        if flag:
+            res['response']['text'] = 'Привет! Купи слона!'
+            # Получим подсказки
+            res['response']['buttons'] = get_suggests(user_id)
+        else:
+            res['response']['text'] = 'Привет! Купи кролика!'
+            # Получим подсказки
+            res['response']['buttons'] = get_suggests(user_id)
         return
 
     # Сюда дойдем только, если пользователь не новый,
@@ -120,6 +126,7 @@ def handle_dialog(req, res):
 
 # Функция возвращает две подсказки для ответа.
 def get_suggests(user_id):
+    global flag
     session = sessionStorage[user_id]
 
     # Выбираем две первые подсказки из массива.
