@@ -106,7 +106,6 @@ def handle_dialog(req, res):
         # Пользователь согласился, прощаемся.
         if flag:
             res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!\n'
-            flag = False
         else:
             res['response']['text'] = 'Кролика можно найти на Яндекс.Маркете!\n'
             res['response']['end_session'] = True
