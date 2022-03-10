@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.INFO)
 # Такая запись говорит, что мы показали пользователю эти три подсказки.
 # Когда он откажется купить слона,
 # то мы уберем одну подсказку. Как будто что-то меняется :)
-sessionStorage, flag = {}, True
+sessionStorage = {}
 
 
 @app.route('/post', methods=['POST'])
@@ -61,11 +61,9 @@ def main():
 
 
 def handle_dialog(req, res):
-    global flag
     user_id = req['session']['user_id']
 
     if req['session']['new']:
-        flag = True
         # Это новый пользователь.
         # Инициализируем сессию и поприветствуем его.
         # Запишем подсказки, которые мы ему покажем в первый раз
@@ -78,14 +76,9 @@ def handle_dialog(req, res):
             ]
         }
         # Заполняем текст ответа
-        if flag:
-            res['response']['text'] = 'Привет! Купи слона!'
-            # Получим подсказки
-            res['response']['buttons'] = get_suggests(user_id)
-        else:
-            res['response']['text'] = 'Привет! Купи кролика!'
-            # Получим подсказки
-            res['response']['buttons'] = get_suggests(user_id)
+        res['response']['text'] = 'Привет! Купи слона!'
+        # Получим подсказки
+        res['response']['buttons'] = get_suggests(user_id)
         return
 
     # Сюда дойдем только, если пользователь не новый,
@@ -100,62 +93,42 @@ def handle_dialog(req, res):
         'ладно',
         'куплю',
         'покупаю',
-        'хорошо',
-        'Я покупаю',
-        'Я куплю'
+        'хорошо'
     ]:
         # Пользователь согласился, прощаемся.
-        if flag:
-            res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!\n'
-            flag = False
-        else:
-            res['response']['text'] = 'Кролика можно найти на Яндекс.Маркете!\n'
-            res['response']['end_session'] = True
+        res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
+        res['response']['end_session'] = True
         return
 
     # Если нет, то убеждаем его купить слона!
-    if flag:
-        res['response']['text'] = \
-            f"Все говорят '{req['request']['original_utterance']}', а ты купи слона!"
-        res['response']['buttons'] = get_suggests(user_id)
-    else:
-        res['response']['text'] = \
-            f"Все говорят '{req['request']['original_utterance']}', а ты купи кролика!"
-        res['response']['buttons'] = get_suggests(user_id)
+    res['response']['text'] = \
+        f"Все говорят '{req['request']['original_utterance']}', а ты купи слона!"
+    res['response']['buttons'] = get_suggests(user_id)
 
 
 # Функция возвращает две подсказки для ответа.
 def get_suggests(user_id):
-    global flag
     session = sessionStorage[user_id]
 
-    if not flag:
-        suggests = [
-            {'title': suggest, 'hide': True}
-            for suggest in session['suggests'][:2]
-        ]
-        session['suggests'] = session['suggests'][1:]
-        sessionStorage[user_id] = session
-        if len(suggests) < 2:
-            flag = False
-            suggests.append({
-                "title": "Ладно",
-                "url": "https://market.yandex.ru/search?text=слон",
-                "hide": True
-            })
-    else:
-        suggests = [
-            {'title': suggest, 'hide': True}
-            for suggest in session['suggests'][:2]
-        ]
-        session['suggests'] = session['suggests'][1:]
-        sessionStorage[user_id] = session
-        if len(suggests) < 2:
-            suggests.append({
-                "title": "Ладно",
-                "url": "https://market.yandex.ru/search?text=кролик",
-                "hide": True
-            })
+    # Выбираем две первые подсказки из массива.
+    suggests = [
+        {'title': suggest, 'hide': True}
+        for suggest in session['suggests'][:2]
+    ]
+
+    # Убираем первую подсказку, чтобы подсказки менялись каждый раз.
+    session['suggests'] = session['suggests'][1:]
+    sessionStorage[user_id] = session
+
+    # Если осталась только одна подсказка, предлагаем подсказку
+    # со ссылкой на Яндекс.Маркет.
+    if len(suggests) < 2:
+        suggests.append({
+            "title": "Ладно",
+            "url": "https://market.yandex.ru/search?text=слон",
+            "hide": True
+        })
+
     return suggests
 
 
