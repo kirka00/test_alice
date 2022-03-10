@@ -106,6 +106,7 @@ def handle_dialog(req, res):
         # Пользователь согласился, прощаемся.
         if flag:
             res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!\n'
+            flag = False
         else:
             res['response']['text'] = 'Кролика можно найти на Яндекс.Маркете!\n'
             res['response']['end_session'] = True
@@ -127,7 +128,7 @@ def get_suggests(user_id):
     global flag
     session = sessionStorage[user_id]
 
-    if flag:
+    if not flag:
         suggests = [
             {'title': suggest, 'hide': True}
             for suggest in session['suggests'][:2]
