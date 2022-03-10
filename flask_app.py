@@ -65,6 +65,7 @@ def handle_dialog(req, res):
     user_id = req['session']['user_id']
 
     if req['session']['new']:
+        flag = True
         # Это новый пользователь.
         # Инициализируем сессию и поприветствуем его.
         # Запишем подсказки, которые мы ему покажем в первый раз
@@ -128,7 +129,7 @@ def get_suggests(user_id):
     global flag
     session = sessionStorage[user_id]
 
-    if not flag:
+    if notflag:
         suggests = [
             {'title': suggest, 'hide': True}
             for suggest in session['suggests'][:2]
